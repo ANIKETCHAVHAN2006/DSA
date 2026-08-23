@@ -1,41 +1,39 @@
 class Solution {
 public:
-    int minCost(int n, vector<int>& cuts) {
-        int m = cuts.size();
 
-        // Add boundaries
-        cuts.push_back(0);
-        cuts.push_back(n);
+    int f(int i, int j, vector<int>& cuts, vector<vector<int>>& dp) {
 
-        // Sort cut positions
-        sort(cuts.begin(), cuts.end());
+        if (i > j)
+            return 0;
 
-        int size = m + 2;
+        if (dp[i][j] != -1)
+            return dp[i][j];
 
-        // dp[i][j] = minimum cost to cut between cuts[i] and cuts[j]
-        vector<vector<int>> dp(size, vector<int>(size, 0));
+        int mini = INT_MAX;
 
-        // Length of interval
-        for (int len = 2; len < size; len++) {
+        for (int ind = i; ind <= j; ind++) {
 
-            for (int i = 0; i + len < size; i++) {
+            int cost = cuts[j + 1] - cuts[i - 1]
+                     + f(i, ind - 1, cuts, dp)
+                     + f(ind + 1, j, cuts, dp);
 
-                int j = i + len;
-
-                dp[i][j] = INT_MAX;
-
-                // Try every possible first cut
-                for (int k = i + 1; k < j; k++) {
-
-                    int cost = dp[i][k]
-                             + dp[k][j]
-                             + cuts[j] - cuts[i];
-
-                    dp[i][j] = min(dp[i][j], cost);
-                }
-            }
+            mini = min(mini, cost);
         }
 
-        return dp[0][size - 1];
+        return dp[i][j] = mini;
+    }
+
+    int minCost(int n, vector<int>& cuts) {
+
+        cuts.push_back(n);
+        cuts.push_back(0);
+
+        sort(cuts.begin(), cuts.end());
+
+        int m = cuts.size() - 2;
+
+        vector<vector<int>> dp(m + 2, vector<int>(m + 2, -1));
+
+        return f(1, m, cuts, dp);
     }
 };
